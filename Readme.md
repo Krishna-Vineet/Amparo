@@ -158,8 +158,8 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## **Support**
 For questions or issues, please contact the developers:
-- **Vineet Kumar Sahu**: [LinkedIn Profile](#) (Add link later)
-- **Rakesh Kumar Gupta**: [LinkedIn Profile](#) (Add link later)
-- **Sunaina Kasera**: [LinkedIn Profile](#) (Add link later)
+- **Vineet Kumar Sahu**: [LinkedIn Profile](https://www.linkedin.com/in/vineet-kumar-sahu/)
+- **Rakesh Kumar Gupta**: [LinkedIn Profile](https://www.linkedin.com/in/rakesh02k04/)
+- **Sunaina Kasera**: [LinkedIn Profile](https://www.linkedin.com/in/sunaina-kasera-259352319/)
 
 ---
