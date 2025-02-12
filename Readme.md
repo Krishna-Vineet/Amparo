@@ -82,11 +82,7 @@ Key benefits:
    ```bash
    npm start
    ```
-5. Run the AI backend (Python script):
-   ```bash
-   python python.py
-   ```
-
+   
 ---
 
 ## **Usage**
