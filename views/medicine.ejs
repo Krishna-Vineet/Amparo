@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amparo AI - Medicine</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme */
+            --dark-bg: #F5F7FA;
+            --dark-primary: #2A9D8F;
+            --dark-text: #264653;
+            --dark-accent1: #E9C46A;
+            --dark-accent2: #F4A261;
+            --dark-card: #FFFFFF;
+
+            /* Dark theme */
+            --light-bg: #121212;
+            --light-primary: #BB86FC;
+            --light-text: #E0E0E0;
+            --light-accent1: #03DAC6;
+            --light-accent2: #CF6679;
+            --light-card: #1E1E1E;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-theme {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* Navbar styles from homepage */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light-primary);
+        }
+
+        .dark-theme .logo {
+            color: var(--dark-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .dark-theme .nav-link {
+            color: var(--dark-text);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--light-primary);
+        }
+
+        .dark-theme .nav-link:hover, .dark-theme .nav-link.active {
+            color: var(--dark-primary);
+        }
+
+        /* Medicine page specific styles */
+        .main-content {
+            padding: 6rem 2rem 2rem;
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light-text);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: transform 0.2s;
+        }
+
+        .dark-theme .back-button {
+            color: var(--dark-text);
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+
+        .medicine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .add-medicine-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--light-primary);
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .dark-theme .add-medicine-btn {
+            background: var(--dark-primary);
+        }
+
+        .add-medicine-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .medicine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .medicine-card {
+            background: var(--light-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .dark-theme .medicine-card {
+            background: var(--dark-card);
+        }
+
+        .medicine-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .medicine-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 1rem;
+        }
+
+        .medicine-info {
+            margin-bottom: 0.5rem;
+            color: var(--light-text);
+            opacity: 0.8;
+        }
+
+        .dark-theme .medicine-info {
+            color: var(--dark-text);
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--light-text);
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .dark-theme .action-btn {
+            color: var(--dark-text);
+        }
+
+        .action-btn:hover {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--dark-accent2);
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal {
+            background: var(--light-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .dark-theme .modal {
+            background: var(--dark-card);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            background: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        .dark-theme .form-input {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .modal-btn-primary {
+            background: var(--light-primary);
+            color: white;
+        }
+
+        .dark-theme .modal-btn-primary {
+            background: var(--dark-primary);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--light-text);
+        }
+
+        .dark-theme .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--dark-text);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: none;
+            background: var(--light-primary);
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .dark-theme #theme-toggle {
+            background: var(--dark-primary);
+        }
+    </style>
+</head>
+<body>
+  <div class="background-animation"></div>
+    <nav class="navbar">
+        <div class="logo">Amparo</div>
+        <div class="nav-links">
+            <a href="/medicine" class="nav-link active">Medicine</a>
+            <a href="/reminder" class="nav-link">Reminders</a>
+            <a href="/profile" class="nav-link">
+                <div class="profile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <a href="/" class="back-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+        </a>
+
+        <div class="medicine-header">
+            <h1>My Medicines</h1>
+            <button class="add-medicine-btn" id="addMedicineBtn">Add Medicine</button>
+        </div>
+
+        <div class="medicine-grid" id="medicineGrid">
+            <% if (medicines && medicines.length === 0) { %>
+            <% medicines.forEach(function(medicine) { %>
+                <div class="medicine-card" data-id="<%= medicine.id %>">
+                    <h3 class="medicine-name"><%= medicine.name %></h3>
+                    <div class="medicine-info">Dosage: <%= medicine.dosage %></div>
+                    <div class="medicine-info">Schedule: <%= medicine.schedule %></div>
+                    <div class="card-actions">
+                        <button class="action-btn edit-btn" onclick="editMedicine('<%= medicine.id %>')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteMedicine('<%= medicine.id %>')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            <% }); %>
+            <% } else { %>
+            <p>No medicines found.</p>
+            <% } %>
+        </div>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="medicineModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Medicine</h2>
+            </div>
+            <form id="medicineForm">
+                <div class="form-group">
+                    <label class="form-label" for="medicineName">Medicine Name</label>
+                    <input type="text" id="medicineName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="dosage">Dosage</label>
+                    <input type="text" id="dosage" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="schedule">Schedule</label>
+                    <input type="text" id="schedule" class="form-input" placeholder="e.g., 08:00 & 20:00" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="instructions">Instructions</label>
+                    <input type="text" id="instructions" class="form-input" placeholder="e.g., Take with food">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn modal-btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="modal-btn modal-btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Delete Medicine</h2>
+            </div>
+            <p>Are you sure you want to delete this medicine record?</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button class="modal-btn modal-btn-primary" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="theme-toggle">Toggle Theme</button>
+
+    <script>
+      // Background doodles animation
+      function createDoodles() {
+            const shapes = ['●', '■', '▲', '◆'];
+            const container = document.querySelector('.background-animation');
+            
+            for (let i = 0; i < 20; i++) {
+                const doodle = document.createElement('div');
+                doodle.className = 'doodle';
+                doodle.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                doodle.style.left = `${Math.random() * 100}%`;
+                doodle.style.top = `${Math.random() * 100}%`;
+                doodle.style.fontSize = `${Math.random() * 20 + 10}px`;
+                doodle.style.animation = `float ${Math.random() * 10 + 5}s infinite linear`;
+                container.appendChild(doodle);
+            }
+        }
+    
+        
+        // DOM Elements
+        const medicineGrid = document.getElementById('medicineGrid');
+        const medicineModal = document.getElementById('medicineModal');
+        const deleteModal = document.getElementById('deleteModal');
+        const addMedicineBtn = document.getElementById('addMedicineBtn');
+        const medicineForm = document.getElementById('medicineForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const themeToggle = document.getElementById('theme-toggle');
+      
+        let currentMedicineId = null;
+      
+        // Functions
+        async function fetchMedicines() {
+          try {
+            const response = await fetch('/medicines', {
+              method: 'GET',
+              credentials: 'include',
+            });
+      
+            if (!response.ok) {
+              throw new Error('Failed to fetch medicines.');
+            }
+      
+            const medicines = await response.json();
+            renderMedicines(medicines);
+          } catch (error) {
+            console.error(error);
+            medicineGrid.innerHTML = '<p>Error loading medicines. Please try again later.</p>';
+          }
+        }
+      
+        function renderMedicines(medicines) {
+          medicineGrid.innerHTML = medicines
+            .map(
+              (medicine) => `
+              <div class="medicine-card" data-id="${medicine._id}">
+                <h3 class="medicine-name">${medicine.medicationName}</h3>
+                <div class="medicine-info">Dosage: ${medicine.dosage}</div>
+                <div class="medicine-info">Schedule: ${medicine.schedule}</div>
+                <div class="medicine-info">Instructions: ${medicine.instructions}</div>
+                <div class="medicine-info">Last Taken: ${new Date(medicine.lastTaken).toISOString().slice(0, 16).replace('T', ' ')}</div>
+                <div class="card-actions">
+                  <button class="action-btn edit-btn" onclick="editMedicine('${medicine._id}')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn delete-btn" onclick="deleteMedicine('${medicine._id}')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            `
+            )
+            .join('');
+        }
+      
+        function showModal(modal) {
+          modal.style.display = 'flex';
+        }
+      
+        function hideModal(modal) {
+          modal.style.display = 'none';
+        }
+      
+        function clearForm() {
+          medicineForm.reset();
+          currentMedicineId = null;
+        }
+      
+        async function editMedicine(id) {
+          try {
+            const response = await fetch(`/medicines/${id}`, {
+              method: 'GET',
+              credentials: 'include',
+            });
+      
+            if (!response.ok) {
+              throw new Error('Failed to fetch medicine details.');
+            }
+      
+            const medicine = await response.json();
+            currentMedicineId = medicine._id;
+            document.getElementById('medicineName').value = medicine.medicationName;
+            document.getElementById('dosage').value = medicine.dosage;
+            document.getElementById('schedule').value = medicine.schedule.join(' & ');
+            document.getElementById('instructions').value = medicine.instructions;
+            modalTitle.textContent = 'Edit Medicine';
+            showModal(medicineModal);
+          } catch (error) {
+            console.error(error);
+            alert('Error loading medicine details.');
+          }
+        }
+      
+        function deleteMedicine(id) {
+          currentMedicineId = id;
+          showModal(deleteModal);
+        }
+      
+        async function confirmDelete() {
+          try {
+            const response = await fetch(`/medicines/${currentMedicineId}`, {
+              method: 'DELETE',
+              credentials: 'include',
+            });
+      
+            if (!response.ok) {
+              throw new Error('Failed to delete medicine.');
+            }
+      
+            await fetchMedicines();
+            hideModal(deleteModal);
+            currentMedicineId = null;
+          } catch (error) {
+            console.error(error);
+            alert('Error deleting medicine.');
+          }
+        }
+      
+        // Event Listeners
+        addMedicineBtn.addEventListener('click', () => {
+          clearForm();
+          modalTitle.textContent = 'Add Medicine';
+          showModal(medicineModal);
+        });
+      
+        medicineForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = {
+            name: document.getElementById('medicineName').value,
+            dosage: document.getElementById('dosage').value,
+            schedule: document.getElementById('schedule').value,
+            instructions: document.getElementById('instructions').value,
+          };
+      
+          try {
+            if (currentMedicineId) {
+              // Update existing medicine
+              const response = await fetch(`/medicines/${currentMedicineId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+                credentials: 'include',
+              });
+      
+              if (!response.ok) {
+                throw new Error('Failed to update medicine.');
+              }
+            } else {
+              // Add new medicine
+              const response = await fetch('/medicines', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+                credentials: 'include',
+              });
+      
+              if (!response.ok) {
+                throw new Error('Failed to add medicine.');
+              }
+            }
+      
+            await fetchMedicines();
+            hideModal(medicineModal);
+            clearForm();
+          } catch (error) {
+            console.error(error);
+            alert('Error saving medicine.');
+          }
+        });
+      
+        cancelBtn.addEventListener('click', () => {
+          hideModal(medicineModal);
+          clearForm();
+        });
+      
+        cancelDeleteBtn.addEventListener('click', () => {
+          hideModal(deleteModal);
+          currentMedicineId = null;
+        });
+      
+        confirmDeleteBtn.addEventListener('click', confirmDelete);
+      
+        // Close modals when clicking outside
+        [medicineModal, deleteModal].forEach((modal) => {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              hideModal(modal);
+              clearForm();
+            }
+          });
+        });
+      // Theme toggle
+      themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+        });
+        // Initialize
+        fetchMedicines();
+      </script>
+</body>
+</html>
