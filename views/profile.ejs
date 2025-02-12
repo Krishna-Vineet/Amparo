@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amparo AI - Profile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+        :root {
+            /* Light theme */
+            --dark-bg: #F5F7FA;
+            --dark-primary: #2A9D8F;
+            --dark-text: #264653;
+            --dark-accent1: #E9C46A;
+            --dark-accent2: #F4A261;
+
+            /* Dark theme */
+            --light-bg: #121212;
+            --light-primary: #BB86FC;
+            --light-text: #E0E0E0;
+            --light-accent1: #03DAC6;
+            --light-accent2: #CF6679;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-theme {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light-primary);
+        }
+
+        .dark-theme .logo {
+            color: var(--dark-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .dark-theme .nav-link {
+            color: var(--dark-text);
+        }
+
+        .nav-link:hover {
+            color: var(--light-primary);
+        }
+
+        .dark-theme .nav-link:hover {
+            color: var(--dark-primary);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 6rem;
+            z-index: 1;
+            left: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--light-text);
+            transition: all 0.3s;
+        }
+
+        .dark-theme .back-button {
+            color: var(--dark-text);
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 80px auto 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+        }
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .medical-badges {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: var(--light-primary);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .dark-theme .badge {
+            background: var(--dark-primary);
+        }
+
+        .profile-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+        }
+
+        .profile-actions {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .action-button {
+            padding: 1rem;
+            border: none;
+            border-radius: 1rem;
+            background: var(--light-primary);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-button.delete {
+            background: #EF476F;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .legal-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .legal-link {
+            color: var(--light-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .dark-theme .legal-link {
+            color: var(--dark-text);
+        }
+
+        /* Modal Styles */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .modal-content {
+            background: var(--light-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .dark-theme .modal-content {
+            background: var(--dark-bg);
+        }
+
+        /* Theme Toggle Button */
+        #theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: none;
+            background: var(--light-primary);
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .dark-theme #theme-toggle {
+            background: var(--dark-primary);
+        }
+         
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+    <nav class="navbar">
+        <div class="logo">Amparo</div>
+        <div class="nav-links">
+            <a href="/medicine" class="nav-link">Medicine</a>
+            <a href="/reminder" class="nav-link">Reminders</a>
+            <a href="/profile" class="nav-link">
+                <div class="profile">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                   
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <button class="back-button" onclick="goBack()">← Back</button>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1><%= user.name %></h1>
+            <div class="medical-badges">
+                <span class="badge"><%= user.conditions %></span>
+            </div>
+            <p>📱 <%= user.phone %></p>
+        </div>
+
+        <div class="profile-section">
+            <h2>Quick Access</h2>
+            <div class="profile-actions">
+                <button class="action-button" onclick="location.href='/medicine'">
+                    View Medications <%#= user.medicationsCount %>
+                </button>
+                <button class="action-button" onclick="location.href='/reminder'">
+                    View Reminders <%#= user.remindersCount %>
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>Account Settings</h2>
+            <div class="profile-actions">
+                <button class="action-button" onclick="showModal('editModal')">
+                    Edit Profile
+                </button>
+                <button class="action-button" onclick="showModal('passwordModal')">
+                    Change Password
+                </button>
+                <button class="action-button delete" onclick="showModal('deleteModal')">
+                    Delete Account
+                </button>
+                <button class="action-button" onclick="logout()">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="legal-links">
+            <a href="#" class="legal-link">Privacy Policy</a>
+            <a href="#" class="legal-link">Terms of Service</a>
+            <a href="#" class="legal-link">Support</a>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="profile-modal">
+        <div class="modal-content">
+            <h3>Edit Profile</h3>
+            <form id="editForm">
+                <input type="text" placeholder="Name" value="<%= user.name %>" required>
+                <input type="tel" placeholder="Phone Number" value="<%= user.phone %>" required>
+                <button type="submit">Save Changes</button>
+                <button type="button" onclick="hideModal('editModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="profile-modal">
+        <div class="modal-content">
+            <h3>Change Password</h3>
+            <form id="passwordForm">
+                <input type="password" placeholder="Current Password" required>
+                <input type="password" placeholder="New Password" required>
+                <input type="password" placeholder="Confirm New Password" required>
+                <button type="submit">Change Password</button>
+                <button type="button" onclick="hideModal('passwordModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div id="deleteModal" class="profile-modal">
+        <div class="modal-content">
+            <h3>Delete Account</h3>
+            <p>Are you sure you want to delete your account? This action is irreversible.</p>
+            <button class="action-button delete" onclick="confirmDelete()">Delete</button>
+            <button type="button" onclick="hideModal('deleteModal')">Cancel</button>
+        </div>
+    </div>
+
+    <button id="theme-toggle">Toggle Theme</button>
+
+    <script>
+        // Background doodles animation
+        function createDoodles() {
+            const shapes = ['●', '■', '▲', '◆'];
+            const container = document.querySelector('.background-animation');
+            
+            for (let i = 0; i < 20; i++) {
+                const doodle = document.createElement('div');
+                doodle.className = 'doodle';
+                doodle.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                doodle.style.left = `${Math.random() * 100}%`;
+                doodle.style.top = `${Math.random() * 100}%`;
+                doodle.style.fontSize = `${Math.random() * 20 + 10}px`;
+                doodle.style.animation = `float ${Math.random() * 10 + 5}s infinite linear`;
+                container.appendChild(doodle);
+            }
+        }
+    
+        
+        // Back button functionality
+        function goBack() {
+            window.history.back();
+        }
+
+        // Modal handling
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                // Add logout logic
+                window.location.href = '/login';
+            }
+        }
+
+        // Confirm account deletion
+        function confirmDelete() {
+            // Logic to delete the account
+            alert('Your account has been deleted.');
+            hideModal('deleteModal');
+            // Redirect or perform additional actions
+        }
+
+        // Close modals on outside click
+        document.querySelectorAll('.profile-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) hideModal(modal.id);
+            });
+        });
+
+        // Theme toggling
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+        });
+
+        // Handle form submissions
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Logic to save profile changes
+            alert('Profile updated successfully!');
+            hideModal('editModal');
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Logic to change password
+            alert('Password changed successfully!');
+            hideModal('passwordModal');
+        });
+    </script>
+</body>
+</html>
