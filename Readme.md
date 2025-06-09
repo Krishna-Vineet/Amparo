@@ -1,5 +1,5 @@
 
-# 🛡️ Amparo AI
+# 🛡️ Amparo AI [Visit](amparo-seven.vercel.app)
 
 **Amparo AI** is a versatile, AI-powered personal assistant that bridges the gap between daily convenience and critical health management. Designed with accessibility and safety in mind, it offers medication reminders, emergency alerts, conversational AI, and voice interaction—everything in one platform.
 
@@ -94,7 +94,7 @@ Hands-free control and feedback:
 
 ## 🚀 Live Demo
 
-**[🔗 View Amparo AI Live](#)**  
+**[🔗 View Amparo AI Live](amparo-seven.vercel.app)**  
 
 
 ---
@@ -142,8 +142,8 @@ Hands-free control and feedback:
 ### 📥 Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/amparo-ai.git
-cd amparo-ai
+git clone https://github.com/Krishna-Vineet/Amparo.git
+cd Amparo
 npm install
 ```
 
