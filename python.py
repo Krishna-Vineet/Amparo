@@ -38,12 +38,8 @@ twilio_client = Client(Config.ACCOUNT_SID, Config.AUTH_TOKEN)
 
 class AIAssistant:
     def __init__(self, user_profile=None):
-<<<<<<< HEAD
         self.model = genai.GenerativeModel("gemini-2.0-flash")
-=======
-        self.model = genai.GenerativeModel("gemini-pro")
->>>>>>> 02fc30822f502e41c44e4bca57872159e4c29fc9
-        self.user_profile = user_profile or {}
+      self.user_profile = user_profile or {}
 
     @staticmethod
     def humanify_weather(weather_data: str) -> str:
