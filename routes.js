@@ -159,9 +159,8 @@ router.get('/medicine', authMiddleware, async (req, res) => {
         id: med._id,
         name: med.medicationName,
         dosage: med.dosage,
-        schedule: med.schedule.times.join(', '), // Convert array of times to a string
-        instructions: med.instructions || 'No instructions provided',
-        lastTaken: med.lastTaken ? med.lastTaken.toISOString().split('T')[0] : 'Not taken yet',
+        schedule: med.schedule,
+        instructions: med.instructions || 'No instructions provided'
       }));
   
       // Send the medicines data as a response
@@ -324,8 +323,7 @@ router.post('/medicines', authMiddleware, async (req, res) => {
       medicationName: name,
       dosage,
       schedule: schedule.split('&').map(time => time.trim()),
-      instructions,
-      lastTaken: new Date(),
+      instructions
     });
 
     await newMedicine.save();

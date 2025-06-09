@@ -38,7 +38,7 @@ twilio_client = Client(Config.ACCOUNT_SID, Config.AUTH_TOKEN)
 
 class AIAssistant:
     def __init__(self, user_profile=None):
-        self.model = genai.GenerativeModel("gemini-pro")
+        self.model = genai.GenerativeModel("gemini-2.0-flash")
         self.user_profile = user_profile or {}
 
     @staticmethod

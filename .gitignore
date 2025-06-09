@@ -62,3 +62,6 @@ Thumbs.db
 # Virtual environment (if using venv)
 venv/
 env/
+
+# Extras
+amparo.zip

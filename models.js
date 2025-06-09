@@ -6,10 +6,7 @@ const medicalSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     medicationName: { type: String, required: true },
     dosage: { type: String, required: true },
-    schedule: {
-      times: [{ type: String, required: true }], // Example: ["08:00", "20:00"]
-      days: [{ type: String, required: true }],  // Example: ["Monday", "Tuesday"]
-    },
+    schedule: { type: [String], required: true },
     instructions: { type: String }
   },
   { timestamps: true }
