@@ -511,6 +511,10 @@
                 <div class="medicine-info">Dosage: ${medicine.dosage}</div>
                 <div class="medicine-info">Schedule: ${medicine.schedule}</div>
                 <div class="medicine-info">Instructions: ${medicine.instructions}</div>
+<<<<<<< HEAD
+=======
+                <div class="medicine-info">Last Taken: ${new Date(medicine.lastTaken).toISOString().slice(0, 16).replace('T', ' ')}</div>
+>>>>>>> 02fc30822f502e41c44e4bca57872159e4c29fc9
                 <div class="card-actions">
                   <button class="action-btn edit-btn" onclick="editMedicine('${medicine._id}')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

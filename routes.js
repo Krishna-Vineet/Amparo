@@ -159,8 +159,14 @@ router.get('/medicine', authMiddleware, async (req, res) => {
         id: med._id,
         name: med.medicationName,
         dosage: med.dosage,
+<<<<<<< HEAD
         schedule: med.schedule,
         instructions: med.instructions || 'No instructions provided'
+=======
+        schedule: med.schedule.times.join(', '), // Convert array of times to a string
+        instructions: med.instructions || 'No instructions provided',
+        lastTaken: med.lastTaken ? med.lastTaken.toISOString().split('T')[0] : 'Not taken yet',
+>>>>>>> 02fc30822f502e41c44e4bca57872159e4c29fc9
       }));
   
       // Send the medicines data as a response
@@ -323,7 +329,12 @@ router.post('/medicines', authMiddleware, async (req, res) => {
       medicationName: name,
       dosage,
       schedule: schedule.split('&').map(time => time.trim()),
+<<<<<<< HEAD
       instructions
+=======
+      instructions,
+      lastTaken: new Date(),
+>>>>>>> 02fc30822f502e41c44e4bca57872159e4c29fc9
     });
 
     await newMedicine.save();
