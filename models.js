@@ -64,11 +64,29 @@ const userSchema = new mongoose.Schema(
 
 // Define an instance method to validate the password
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  if (!this.isModified('passwordHash')) return next();
+  // Password hashing is already done in the routes, but if we want to centralize it:
+  // this.passwordHash = await bcrypt.hash(this.passwordHash, 10);
   next();
 });
+
+// Virtual for user's medical records
+userSchema.virtual('medical', {
+  ref: 'Medical',
+  localField: '_id',
+  foreignField: 'userId'
+});
+
+// Virtual for user's reminders
+userSchema.virtual('reminders', {
+  ref: 'Reminder',
+  localField: '_id',
+  foreignField: 'userId'
+});
+
+// Ensure virtuals are included in toJSON and toObject
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 const User = mongoose.model('User', userSchema);
 

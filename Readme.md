@@ -161,12 +161,15 @@ GEMINI_API_KEY=your_gemini_api_key
 GNEWS_API_KEY=your_gnews_api_key
 ```
 
-### 🚀 Start Servers
+### 🚀 Start Server
 
 ```bash
-npm start         # Node.js backend
-python python.py  # AI Python backend
+npm run dev  # For development (uses nodemon)
+# OR
+npm start    # For production
 ```
+
+> **Note**: The AI features require Python to be installed on your system. The Node.js server handles the Python interaction automatically. You can configure the Python path in your `.env` file using `PYTHON_PATH`.
 
 ---
 

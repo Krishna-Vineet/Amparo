@@ -34,8 +34,6 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/amparoai';
 mongoose.connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000,
 })
 .then(() => console.log('MongoDB connected successfully'))

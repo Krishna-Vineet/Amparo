@@ -71,6 +71,12 @@ router.post('/login', async (req, res) => {
     }
   });
 
+// Logout route
+router.get('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/login');
+});
+
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -93,7 +99,7 @@ router.post('/register', async (req, res) => {
       phone,
       passwordHash,
       emergencyContacts,
-      medicalIssues: medicalIssues.join(', '), // Store as a comma-separated string
+      medicalIssues: Array.isArray(medicalIssues) ? medicalIssues.join(', ') : medicalIssues,
     });
 
     // Save the user to the database
@@ -114,22 +120,25 @@ router.get('/profile', authMiddleware, async (req, res) => {
       // Access the authenticated user's ID from req.user
       const userId = req.user.userId;
   
-      // Fetch user details from the database
-      const user = await User.findById(userId).select('-passwordHash'); // Exclude sensitive data
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
-      }
-  
-      // Transform the user data into the desired format
-      const userData = {
-        name: user.name,
-        conditions: user.medicalIssues, // Convert string to array
-        phone: user.phone,
-        address: "123 Healthcare St, Wellness City", // Static for now; you can add this to the database later
-        medicationsCount: user.medical ? user.medical.length : '0', // Assuming `medical` is an array of medications
-        remindersCount: user.reminders ? user.reminders.length : '0', // Assuming `reminders` is an array of reminders
-      };
+    // Fetch user details from the database and populate virtuals
+    const user = await User.findById(userId)
+      .select('-passwordHash')
+      .populate('medical')
+      .populate('reminders');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Transform the user data into the desired format
+    const userData = {
+      name: user.name,
+      conditions: user.medicalIssues ? user.medicalIssues.split(', ') : [],
+      phone: user.phone,
+      address: user.address || "Address not provided", // Using user.address if available
+      medicationsCount: user.medical ? user.medical.length : 0,
+      remindersCount: user.reminders ? user.reminders.length : 0,
+    };
   
       // Send the user data as a response
       res.render('profile', {user : userData});
@@ -387,7 +396,8 @@ router.post('/aiwork', authMiddleware, async (req, res) => {
     const userData = await fetchData(userId);
     console.log("User Data:", userData);
 
-    const pythonProcess = spawn('python', ['python.py']);
+    const pythonPath = process.env.PYTHON_PATH || 'python';
+    const pythonProcess = spawn(pythonPath, ['python.py']);
     let pythonOutput = '';
 
     // Write input as JSON to Python stdin

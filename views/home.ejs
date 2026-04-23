@@ -278,6 +278,72 @@
             font-size: 0.8rem;
             color: var(--light-primary);
         }
+
+        /* SOS Alert UI */
+        .sos-alert-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(239, 71, 111, 0.9);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            animation: pulse-bg 1s infinite;
+        }
+
+        @keyframes pulse-bg {
+            0% { background: rgba(239, 71, 111, 0.9); }
+            50% { background: rgba(239, 71, 111, 1); }
+            100% { background: rgba(239, 71, 111, 0.9); }
+        }
+
+        .sos-content {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .sos-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: scale-up 0.5s infinite alternate;
+        }
+
+        @keyframes scale-up {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
+        .sos-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .sos-number {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .close-sos {
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            background: white;
+            color: #EF476F;
+            border: none;
+            border-radius: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .close-sos:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -297,6 +363,16 @@
             </a>
         </div>
     </nav>
+
+    <div id="sos-alert" class="sos-alert-overlay">
+        <div class="sos-content">
+            <div class="sos-icon">🆘</div>
+            <div class="sos-title">SOS TRIGGERED</div>
+            <div class="sos-number" id="sos-recipient">Calling: ---</div>
+            <div style="margin-top: 1rem;">Simulation Active - No real call placed.</div>
+            <button class="close-sos" onclick="hideSOS()">DISMISS</button>
+        </div>
+    </div>
 
     <main class="main-content">
         <div class="background-animation"></div>
@@ -477,11 +553,20 @@
                     body: JSON.stringify({ text: text })
                 });
                 const data = await response.json();
-                // console.log("Response to frontend: " + data.response);
+                
+                let displayResponse = data.response;
+                
+                // Check if it's a mocked SOS alert
+                if (displayResponse.startsWith('MOCK_SOS:')) {
+                    const number = displayResponse.split('for ')[1] || 'Emergency Contacts';
+                    showSOS(number);
+                    displayResponse = "I have triggered an emergency alert for you. Help is on the way.";
+                }
+
                 // Add AI's response to the chat.
-                addMessage(data.response, false);
+                addMessage(displayResponse, false);
                 // Speak the response.
-                speakText(data.response);
+                speakText(displayResponse);
             } catch (error) {
                 console.error('Error:', error);
                 addMessage('Sorry, there was an error processing your message.', false);
@@ -527,6 +612,16 @@
             document.body.classList.toggle('dark-theme');
         });
     
+        // SOS Alert handling
+        function showSOS(number) {
+            document.getElementById('sos-recipient').textContent = `Simulating Call to: ${number}`;
+            document.getElementById('sos-alert').style.display = 'flex';
+        }
+
+        function hideSOS() {
+            document.getElementById('sos-alert').style.display = 'none';
+        }
+
         // Initialize everything
         setupSpeechRecognition();
         setupTextToSpeech();

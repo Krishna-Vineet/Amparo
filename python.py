@@ -7,10 +7,14 @@ import asyncio
 import requests
 import logging
 from typing import Dict, Any
-from twilio.rest import Client
-import google.generativeai as genai
+try:
+    from twilio.rest import Client
+    HAS_TWILIO = True
+except ImportError:
+    HAS_TWILIO = False
+from google import genai
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')  # Adjust path as needed
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 # Configure logging
@@ -27,44 +31,75 @@ class Config:
     TWILIO_PHONE = os.getenv("TWILIO_PHONE_NUMBER", "")
     WEATHER_KEY = os.getenv("WEATHER_API_KEY", "")
     GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
     EMERGENCY_CONTACT = os.getenv("EMERGENCY_CONTACT", "")
     GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "")
 
 # logger.info(f"Loaded TWILIO_ACCOUNT_SID: {Config.ACCOUNT_SID}")
 # logger.info(f"Loaded WEATHER_API_KEY: {Config.WEATHER_KEY}")
 # Service initialization
-genai.configure(api_key=Config.GEMINI_KEY)
-twilio_client = Client(Config.ACCOUNT_SID, Config.AUTH_TOKEN)
+genai_client = genai.Client(api_key=Config.GEMINI_KEY)
+if HAS_TWILIO and Config.ACCOUNT_SID and Config.AUTH_TOKEN:
+    try:
+        twilio_client = Client(Config.ACCOUNT_SID, Config.AUTH_TOKEN)
+    except Exception as e:
+        logger.error(f"Failed to initialize Twilio client: {e}")
+        twilio_client = None
+else:
+    twilio_client = None
 
 class AIAssistant:
     def __init__(self, user_profile=None):
-        self.model = genai.GenerativeModel("gemini-2.0-flash")
-      self.user_profile = user_profile or {}
+        self.api_key = Config.GROQ_API_KEY
+        self.model_name = "llama-3.1-8b-instant"
+        self.user_profile = user_profile or {}
+
+    def _query_ai(self, prompt: str, system_message: str = "You are Amparo, a friendly voice assistant.") -> str:
+        """Helper to query Groq API."""
+        if not self.api_key:
+            return "AI configuration missing."
+        
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": self.model_name,
+            "messages": [
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 150
+        }
+        try:
+            response = requests.post(url, headers=headers, json=data, timeout=10)
+            response.raise_for_status()
+            return response.json()['choices'][0]['message']['content'].strip()
+        except Exception as e:
+            logger.error(f"Groq API error: {str(e)}")
+            return "I'm having trouble connecting to my brain right now."
 
     @staticmethod
     def humanify_weather(weather_data: str) -> str:
         """Use AI to make the weather response more conversational."""
         prompt = (
-            f"You are Amparo, a friendly voice assistant. Convert this raw weather data into a natural, conversational response:\n"
+            f"Convert this raw weather data into a natural, conversational response:\n"
             f"{weather_data}\n"
-            f"and respond in 25 to 50 wprds in total without markdown, * symbol, or emojis, etc.\n"
+            f"and respond in 25 to 50 words in total without markdown, * symbol, or emojis, etc."
         )
-        try:
-            ai = AIAssistant()  # Create an instance of AIAssistant
-            response = ai.model.generate_content(prompt)
-            humanified_response = response.text.strip()
-            # logger.info(f"Humanified weather response: {humanified_response}")
-            return humanified_response
-        except Exception as e:
-            logger.error(f"Humanification error: {str(e)}")
-            return f"The weather details are: {weather_data}"
+        ai = AIAssistant()
+        return ai._query_ai(prompt)
     def _build_context(self) -> str:
         """Build a context string based on user profile."""
         context = []
-        if self.user_profile.get("name"):
-            context.append(f"User's name: {self.user_profile['name']}")
-        if self.user_profile.get("medicalIssues"):
-            context.append(f"Medical issues: {self.user_profile['medicalIssues']}")
+        user_info = self.user_profile.get("user", {})
+        
+        if user_info.get("name"):
+            context.append(f"User's name: {user_info['name']}")
+        if user_info.get("medicalIssues"):
+            context.append(f"Medical issues: {user_info['medicalIssues']}")
         if self.user_profile.get("reminders"):
             reminders = ", ".join([r["message"] for r in self.user_profile["reminders"]])
             context.append(f"Reminders: {reminders}")
@@ -74,47 +109,28 @@ class AIAssistant:
         """Classify user input into action categories."""
         context = self._build_context()
         prompt = (
-            f"You are Amparo, a friendly voice assistant. Here is what user says: \"{text}\"\n\n"
-            "Categorize this text into one of the following categories:\n"
-            "sos, weather, news, greetings, health, reminder, conversation(default)\n\n"
-            "Reply only with the category name in lowercase: \n"
+            f"User Profile Context:\n{context}\n\n"
+            f"User Input: \"{text}\"\n\n"
+            "Categorize this input into exactly one: sos, weather, news, greetings, health, reminder, conversation.\n"
+            "Reply with ONLY the category name."
         )
-        try:
-            response = self.model.generate_content(prompt)
-            intent = response.text.strip().lower()
-            # logger.info(f"Classified intent: {intent} | Input: {text}")
-            return intent
-        except Exception as e:
-            logger.error(f"Classification error: {str(e)}")
-            return "conversation"
+        intent = self._query_ai(prompt, system_message="You are a classifier that returns only single words.")
+        return intent.lower()
 
     def generate_response(self, prompt: str) -> str:
         """Generate natural conversational response."""
         context = self._build_context()
         full_prompt = (
-            f"You are Amparo, a friendly voice assistant. Here is the user's details:\n{context}\n\n"
-            f"Respond conversationally in 1-2 short sentences without markdown, * symbol, or emojis, etc.\n"
+            f"User Context: {context}\n"
             f"User says: \"{prompt}\""
         )
-        try:
-            response = self.model.generate_content(full_prompt)
-            return response.text.strip()
-        except Exception as e:
-            logger.error(f"Response generation error: {str(e)}")
-            return "Let's try that again. Could you rephrase?"
+        system_msg = "You are Amparo, a friendly health assistant. Respond in 1-2 short sentences. No markdown, no emojis."
+        return self._query_ai(full_prompt, system_message=system_msg)
 
     def extract_city(self, text: str) -> str:
         """Extract location from user input."""
-        try:
-            response = self.model.generate_content(
-                f"Extract only the place name from this text: {text}"
-            )
-            city = response.text.strip()
-            # logger.info(f"Extracted place: {city} | Input: {text}")
-            return city
-        except Exception as e:
-            logger.error(f"Location extraction error: {str(e)}")
-            return "Gurugram"  # Default city
+        prompt = f"Extract only the city name from this text: {text}. If none, return 'Gurugram'."
+        return self._query_ai(prompt, system_message="Return only the city name.")
     
 class WeatherService:
     @staticmethod
@@ -139,18 +155,8 @@ class WeatherService:
 
     @staticmethod
     def humanify_weather(weather_data: str) -> str:
-        """Use AI to make the weather response more conversational."""
-        prompt = (
-            f"You are Amparo, a friendly voice assistant. Convert this raw weather data into a natural, conversational response:\n"
-            f"{weather_data}"
-        )
-        try:
-            ai = AIAssistant()  # Create an instance of AIAssistant
-            response = ai.model.generate_content(prompt)
-            return response.text.strip()
-        except Exception as e:
-            logger.error(f"Humanification error: {str(e)}")
-            return f"The weather details are: {weather_data}"
+        """Alias for AIAssistant.humanify_weather."""
+        return AIAssistant.humanify_weather(weather_data)
         
 class EmergencyService:
     @staticmethod
@@ -158,18 +164,18 @@ class EmergencyService:
         """Handle emergency communications."""
         try:
             # Send SMS
-            twilio_client.messages.create(
-                body="SOS! I need help. Please contact me immediately.",
-                from_=Config.TWILIO_PHONE,
-                to=to_number
-            )
+            # twilio_client.messages.create(
+            #     body="SOS! I need help. Please contact me immediately.",
+            #     from_=Config.TWILIO_PHONE,
+            #     to=to_number
+            # )
             # Initiate voice call
-            twilio_client.calls.create(
-                twiml="<Response><Say>SOS! I need help! Please respond.</Say></Response>",
-                from_=Config.TWILIO_PHONE,
-                to=to_number
-            )
-            return "Emergency alert sent to contacts."
+            # twilio_client.calls.create(
+            #     twiml="<Response><Say>SOS! I need help! Please respond.</Say></Response>",
+            #     from_=Config.TWILIO_PHONE,
+            #     to=to_number
+            # )
+            return f"MOCK_SOS: Emergency alert simulated for {to_number}"
         except Exception as e:
             logger.error(f"Emergency service error: {str(e)}")
             return "Emergency services unavailable. Try again."
@@ -197,7 +203,12 @@ class ResponseHandler:
             intent = self.ai.classify_intent(text)
             # logger.info(f"Processed intent: {intent} | User: {self.user_profile.get('name', 'Unknown')}")
             if intent == "sos":
-                return self._handle_emergency(self.user_profile.get("emergencyContacts", [Config.EMERGENCY_CONTACT])[0])
+                emergency_contacts = self.user_profile.get("emergencyContacts", [])
+                to_number = Config.EMERGENCY_CONTACT
+                if emergency_contacts and isinstance(emergency_contacts, list):
+                    # Get the phone number of the first contact
+                    to_number = emergency_contacts[0].get("phone", Config.EMERGENCY_CONTACT)
+                return self._handle_emergency(to_number)
             elif intent == "weather":
                 return self._handle_weather(text)
             elif intent == "greetings":
